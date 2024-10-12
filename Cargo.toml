@@ -1,0 +1,13 @@
+[package]
+name = "McDobal"
+version = "0.0.1"
+edition = "2021"
+authors = ["Martin Eesmaa <martin.eesmaa@protonmail.com>"]
+description = """
+McDobal is a frontend CLI-tool can order globally McDonald's
+"""
+readme = "README.md"
+repository = "https://github.com/MartinEesmaa/McDobal"
+license = "AGPL-3.0"
+
+[dependencies]
