@@ -11,3 +11,7 @@ repository = "https://github.com/MartinEesmaa/McDobal"
 license = "AGPL-3.0"
 
 [dependencies]
+base64 = "0.22.1"
+reqwest = "0.12.8"
+json = "0.12.4"
+text2art = "1.0.2"
