@@ -27,7 +27,9 @@ Availability of McDonald's countries:
 * Canada
 * Germany
 * Japan
+* Latin America (Arcos Dorados)
 * Mesoamerica (Central America)
+* Philippines
 * United Kingdom (UK)
 * United States of America (USA)
 * Worldwide (more than 60 countries)
