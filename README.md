@@ -34,6 +34,8 @@ Availability of McDonald's countries:
 * United States of America (USA)
 * Worldwide (more than 60 countries)
 
+Documentation: [Here](country/README.md)
+
 This may take little long time to build features into CLI program.
 
 - Martin Eesmaa
