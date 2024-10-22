@@ -319,7 +319,7 @@ Example payload with huge:
 
 `20000: The account registration was successful.`
 
-After registering McDonald's account by accepting Terms of Services (TOS) only, but optionally for news updates like newspapers is not necessary needed.
+After registering McDonald's account by accepting Terms & Conditions (T&C) and Privacy Policy only, but optionally for news updates like newspapers is not necessary needed.
 
 Also this will send an email login link to your new registered account.
 
