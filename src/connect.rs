@@ -9,6 +9,9 @@ use std::path::Path;
 use std::io;
 use std::fmt::{Debug, Display};
 use uuid::Uuid;
+use base64::decode;
+use regex::Regex;
+use std::str;
 
 // Define a struct to hold the configuration
 struct Config {
@@ -73,9 +76,9 @@ pub fn australia() -> Result<(), Box<dyn Error>> {
             fs::create_dir(&dir)?;
         }
         fs::write(dir.join("token.txt"), &bearer_token)?;
-        println!("Bearer token saved to token.txt");
+        println!("Bearer token saved to token.txt\n");
     } else {
-        println!("Token not found in the response.");
+        println!("Token not found in the response.\n");
     }
     email_australia("&a")?;
     Ok(())
@@ -97,13 +100,19 @@ where
     A: Display + ?Sized + Debug,
 {
     println!("Welcome to McDonald's Australia, please enter your email address to log in or register");
+    println!("This will detect if user is already registered or not.\n");
 
     let mut email = String::new();
+    println!("Email address SSO (Single Sign On):");
     io::stdin().read_line(&mut email).expect("Failed to read input");
     let email = email.trim();
 
     // Read the Bearer token from the file
     let bearer_token = read_bearer_token()?;
+
+    /* This will payload with memory input of email
+       Normal, they use random deviceID from Android Device, using zeroes is anonymous ID
+       Registration type is only available of traditional, later will be Google and Facebook. */
 
     let payload = json!({
         "customerIdentifier": email,
@@ -116,7 +125,7 @@ where
         .post("https://ap-prod.api.mcd.com/exp/v1/customer/identity/email")
         .header("mcd-clientid", "724uBz3ENHxUMrWH73pekFvUKvj8fD7X")
         .header(header::AUTHORIZATION, bearer_token)
-        .header("x-acf-sensor-data", format!("{}", sensor_data))  // Pass sensor data as header value
+        .header("x-acf-sensor-data", format!("{}", sensor_data))  // Akamai sensor data
         .header("user-agent", "")
         .header("mcd-sourceapp", "GMA")
         .header("mcd-marketid", "au")
@@ -128,13 +137,75 @@ where
         .json(&payload)
         .send()?;
 
-    // Handle the response
     let response_text = response.text()?;
+    let json: Value = serde_json::from_str(&response_text)?;
+    if let Some(message) = json["status"]["message"].as_str() {
+        let success = format!("{message}");
+        println!("\n{success}");
+        australia_request(sensor_data);
+    }
     println!("Response: {}", response_text);
+    australia_request(sensor_data);
 
     Ok(())
 }
 
 fn get_uuid() -> String {
     Uuid::new_v4().as_hyphenated().to_string()
+}
+
+pub fn australia_request<A>(sensor_data: &A) -> Result<(), Box<dyn Error>>
+where
+    A: Display + ?Sized + Debug,
+{
+    println!("\nAlright, you received an email. Please open up your mail, right click where it says");
+    println!("of Log in button, copy and paste the link onto terminal.");
+
+    let mut link = String::new();
+    io::stdin().read_line(&mut link).expect("Failed to read input");
+    let url = link.trim();
+
+    // Regular expression to capture the Base64 string after "ml=" and before "&"
+    let re = Regex::new(r"ml=([^&]+)").expect("Invalid regex");
+    let bearer_token = read_bearer_token()?;
+    let mut encoded_str = None;
+    
+    if let Some(captures) = re.captures(url) {
+        if let Some(matched_str) = captures.get(1) {
+            encoded_str = Some(matched_str.as_str().to_string());
+        }
+    }
+
+    let payload = json!({
+        "activationlink": encoded_str,
+        "clientInfo": {
+            "device": {
+                "deviceUniqueId": "0000000000000000",
+                "os": "Android",
+                "osVersion": "9"
+            }
+        }
+    });
+    
+    let client = Client::new();
+    let response = client
+    .put("https://ap-prod.api.mcd.com/exp/v1/customer/activateandsignin")
+    .header("mcd-clientid", "724uBz3ENHxUMrWH73pekFvUKvj8fD7X")
+    .header(header::AUTHORIZATION, bearer_token)
+    .header("x-acf-sensor-data", format!("{}", sensor_data))  // Akamai sensor data
+    .header("user-agent", "")
+    .header("mcd-sourceapp", "GMA")
+    .header("mcd-marketid", "au")
+    .header("accept-encoding", "gzip")
+    .header("accept-charset", "UTF-8")
+    .header("accept-language", "en-AU")
+    .header("content-type", "application/json; charset=UTF-8")
+    .header("mcd-uuid", get_uuid())
+    .json(&payload)
+    .send()?;
+
+    let response_text = response.text()?;
+    println!("{response_text}");
+
+    Ok(())
 }
