@@ -16,7 +16,7 @@ Alternative menu of Australia: `https://www.mcdonalds.com/graphql/execute.json/g
 
 Main menu of USA: `https://www.mcdonalds.com/graphql/execute.json/gma/us-en-marketing-android`
 
-Alternative menu of Australia: `https://www.mcdonalds.com/graphql/execute.json/gma/au-en-hero-android`
+Alternative menu of USA: `https://www.mcdonalds.com/graphql/execute.json/gma/us-en-hero-android`
 
 Home menu of Australia: `https://gmabannerscms-prod.s3.amazonaws.com/gma/Home-Menu.json`
 
