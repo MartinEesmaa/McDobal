@@ -8,6 +8,8 @@ use std::fs;  // For file handling
 use std::path::Path;
 use std::io;
 use std::fmt::{Debug, Display};
+use std::process::exit;
+use std::io::Write;
 use uuid::Uuid;
 use base64::decode;
 use regex::Regex;
@@ -139,6 +141,18 @@ where
 
     let response_text = response.text()?;
     let json: Value = serde_json::from_str(&response_text)?;
+    if let Some(errors) = json["status"]["errors"].as_array() {
+        for error in errors {
+            if let Some(code) = error["code"].as_i64() {
+                if code == 41447 {
+                    if let Some(error_message) = error["message"].as_str() {
+                        println!("\n\x1b[91mError: {error_message}\x1b[0m\n");
+                        register_australia();
+                    }
+                }
+            }
+        }
+    }
     if let Some(message) = json["status"]["message"].as_str() {
         let success = format!("{message}");
         println!("\n{success}");
@@ -192,7 +206,7 @@ where
     .put("https://ap-prod.api.mcd.com/exp/v1/customer/activateandsignin")
     .header("mcd-clientid", "724uBz3ENHxUMrWH73pekFvUKvj8fD7X")
     .header(header::AUTHORIZATION, bearer_token)
-    .header("x-acf-sensor-data", format!("{}", sensor_data))  // Akamai sensor data
+    .header("x-acf-sensor-data", format!("{}", sensor_data.to_string()))  // Akamai sensor data
     .header("user-agent", "")
     .header("mcd-sourceapp", "GMA")
     .header("mcd-marketid", "au")
@@ -208,4 +222,40 @@ where
     println!("{response_text}");
 
     Ok(())
+}
+
+pub fn register_australia() {
+    println!("Welcome to McDonald's Australia registration!");
+    println!("You may need enter new first name, last name, post code and last email address\n");
+    println!("Please note, this registration is experimental of this program.\n");
+
+    let first_name = prompt("First name");
+    let last_name = prompt("Last name");
+    let post_code = prompt("Post code");
+    let email = prompt("Email address");
+
+    println!("\nPlease confirm your details to register your new account:");
+    println!("First name: {}", first_name);
+    println!("Last name: {}", last_name);
+    println!("Post code: {}", post_code);
+    println!("Email address: {}", email);
+
+    let confirmation = prompt("Type 'yes' to confirm or anything else to cancel");
+    if confirmation.to_lowercase() == "yes" {
+        println!("Sorry! It is unfinished, so it will be coming soon for later updates...");
+        exit(1);
+    } else {
+        println!("Registration cancelled.");
+        println!("Returning to login screen...");
+        println!("Sorry! It is unfinished, so it will be coming soon for later updates...");
+        exit(1);
+    }
+}
+
+fn prompt(field: &str) -> String {
+    print!("{}: ", field);
+    io::stdout().flush().unwrap();
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).unwrap();
+    input.trim().to_string()
 }

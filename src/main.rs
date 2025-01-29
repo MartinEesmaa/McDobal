@@ -4,6 +4,7 @@ use text2art::Printer;
 use std::io;
 
 mod connect;
+mod checkinternet;
 
 enum Choice {
     AU,
@@ -32,7 +33,9 @@ fn main() {
     prntr.print_to_stdio("McDobal").ok();
     println!("\nVersion {version} (Prototype)");
     println!("Created by Martin Eesmaa (2024)\n");
-    println!("This project is experimental and prototype. Coming soon...");
+    println!("This project is experimental and prototype. Coming soon...\n");
+    println!("Checking internet connection...\n");
+    checkinternet::main();
 
     loop {
         println!("Please choose to connect:\n");
